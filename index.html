@@ -1,702 +1,490 @@
-import 'package:flutter/material.dart';
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تحدي شجرة عائلة حسن دياب</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background-color: #0F172A;
+      color: #FFFFFF;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 15px;
+    }
+    .app-container {
+      width: 100%;
+      max-width: 800px;
+      background: #1E293B;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .hidden { display: none !important; }
+    
+    /* शاشة البداية */
+    .start-screen {
+      text-align: center;
+      padding: 20px 10px;
+    }
+    .crown-icon {
+      font-size: 50px;
+      background: rgba(99, 102, 241, 0.2);
+      width: 90px;
+      height: 90px;
+      line-height: 90px;
+      border-radius: 50%;
+      margin: 0 auto 15px;
+      border: 2px solid #818CF8;
+    }
+    .title {
+      color: #FBBF24;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #94A3B8;
+      font-size: 14px;
+      margin-bottom: 25px;
+    }
+    input[type="text"] {
+      width: 100%;
+      max-width: 320px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.05);
+      color: #FFF;
+      font-size: 16px;
+      text-align: center;
+      outline: none;
+      margin-bottom: 20px;
+    }
+    input[type="text"]:focus {
+      border-color: #FBBF24;
+    }
+    .btn {
+      background: #FBBF24;
+      color: #000;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 12px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 320px;
+      transition: 0.2s;
+    }
+    .btn:hover { background: #F59E0B; }
+    
+    /* شاشة الأسئلة */
+    .header-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .player-name { color: #FBBF24; }
+    .q-count { color: #34D399; }
+    .progress-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #FBBF24;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .question-box {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+    .q-emoji { font-size: 32px; }
+    .q-text { font-size: 15px; font-weight: bold; line-height: 1.4; }
 
-void main() {
-  runApp(const FamilyQuizApp());
-}
+    /* الشجرة التفاعلية */
+    .tree-container {
+      background: #0F172A;
+      border-radius: 16px;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 15px;
+    }
+    .roots-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .branches-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .branch-card {
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      padding: 6px;
+      text-align: center;
+    }
+    .branch-title {
+      font-size: 10px;
+      font-weight: bold;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .person-tile {
+      display: inline-block;
+      padding: 4px 8px;
+      margin: 2px;
+      font-size: 10px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      cursor: pointer;
+      user-select: none;
+      transition: 0.15s;
+    }
+    .person-tile.root { font-size: 12px; font-weight: bold; padding: 6px 10px; }
+    .person-tile.selected {
+      background: #FBBF24 !important;
+      color: #000 !important;
+      font-weight: bold;
+      border-color: #FFF !important;
+    }
+    .person-tile.correct-light {
+      background: #16A34A !important;
+      color: #FFF !important;
+      border-color: #4ADE80 !important;
+      font-weight: bold;
+    }
+    .person-tile.wrong-light {
+      background: #DC2626 !important;
+      color: #FFF !important;
+      border-color: #F87171 !important;
+    }
 
-class FamilyQuizApp extends StatelessWidget {
-  const FamilyQuizApp({super.key});
+    /* شاشة النتيجة */
+    .result-screen { text-align: center; padding: 20px 10px; }
+    .score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 8px solid #FBBF24;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin: 20px auto;
+    }
+    .score-percentage { font-size: 32px; font-weight: bold; color: #FBBF24; }
+    .score-sub { font-size: 12px; color: #94A3B8; }
+    .feedback-card {
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      border-radius: 16px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'تحدي شجرة عائلة حسن دياب',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0F172A),
-      ),
-      home: const QuizHomePage(),
-    );
-  }
-}
+<div class="app-container">
+  <!-- 1. شاشة البداية -->
+  <div id="startScreen" class="start-screen">
+    <div class="crown-icon">👑</div>
+    <h1 class="title">تحدي شجرة عائلة حسن دياب</h1>
+    <p class="subtitle">اختر الشخص المناسب من الشجرة مباشرة لكل مقولة أو وصف!</p>
+    <input type="text" id="playerName" placeholder="أدخل اسمك الكريم...">
+    <br>
+    <button class="btn" onclick="startQuiz()">ابدأ التحدي العشوائي 🚀</button>
+  </div>
 
-class QuestionModel {
-  final String questionText;
-  final String emoji;
-  final String correctAnswer;
+  <!-- 2. شاشة الأسئلة -->
+  <div id="quizScreen" class="hidden">
+    <div class="header-info">
+      <span class="player-name" id="displayPlayerName">👤 المتسابق: </span>
+      <span class="q-count" id="displayQCount">السؤال 1 / 24</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 
-  QuestionModel({
-    required this.questionText,
-    required this.emoji,
-    required this.correctAnswer,
-  });
-}
+    <div class="question-box">
+      <span class="q-emoji" id="qEmoji">💡</span>
+      <span class="q-text" id="qText">جاري تحميل السؤال...</span>
+    </div>
 
-class QuizHomePage extends StatefulWidget {
-  const QuizHomePage({super.key});
+    <div class="tree-container">
+      <div class="roots-row">
+        <span class="person-tile root" onclick="selectPerson(this, 'الأب حسن')">الأب حسن</span>
+        <span style="font-size: 12px;">❤️</span>
+        <span class="person-tile root" onclick="selectPerson(this, 'الأم عليا')">الأم عليا</span>
+      </div>
 
-  @override
-  State<QuizHomePage> createState() => _QuizHomePageState();
-}
+      <div class="branches-grid">
+        <div class="branch-card" style="border: 1px solid rgba(56, 189, 248, 0.3);">
+          <div class="branch-title" style="color: #38BDF8;">عائلة أبو زيد</div>
+          <span class="person-tile" onclick="selectPerson(this, 'أم زيد')">أم زيد</span>
+          <span class="person-tile" onclick="selectPerson(this, 'أبو زيد')">أبو زيد</span>
+          <div><i class="fa-solid fa-angle-down" style="font-size: 9px; color: #38BDF8;"></i></div>
+          <span class="person-tile" onclick="selectPerson(this, 'زيد')">زيد</span>
+          <span class="person-tile" onclick="selectPerson(this, 'خولة')">خولة</span>
+        </div>
 
-class _QuizHomePageState extends State<QuizHomePage> {
-  final TextEditingController _nameController = TextEditingController();
-  int _screenIndex = 0; // 0: Start, 1: Quiz, 2: Result
-  int _currentQuestionIndex = 0;
-  int _score = 0;
-  String _selectedPerson = '';
-  
-  bool _hasSubmitted = false;
-  bool _isCorrectAnswer = false;
+        <div class="branch-card" style="border: 1px solid rgba(74, 222, 128, 0.3);">
+          <div class="branch-title" style="color: #4ADE80;">عائلة طلال</div>
+          <span class="person-tile" onclick="selectPerson(this, 'غفير أم أحمد')">غفير أم أحمد</span>
+          <span class="person-tile" onclick="selectPerson(this, 'طلال أبو أحمد')">طلال أبو أحمد</span>
+          <div><i class="fa-solid fa-angle-down" style="font-size: 9px; color: #4ADE80;"></i></div>
+          <span class="person-tile" onclick="selectPerson(this, 'أحمد الطلال')">أحمد الطلال</span>
+          <span class="person-tile" onclick="selectPerson(this, 'محمد الطلال')">محمد الطلال</span>
+          <span class="person-tile" onclick="selectPerson(this, 'معاذ')">معاذ</span>
+          <span class="person-tile" onclick="selectPerson(this, 'سندس')">سندس</span>
+        </div>
 
-  late List<QuestionModel> _questions;
+        <div class="branch-card" style="border: 1px solid rgba(251, 146, 60, 0.3);">
+          <div class="branch-title" style="color: #FB923C;">عائلة شذى وسلمان</div>
+          <span class="person-tile" onclick="selectPerson(this, 'شذى')">شذى</span>
+          <span class="person-tile" onclick="selectPerson(this, 'سلمان')">سلمان</span>
+          <div><i class="fa-solid fa-angle-down" style="font-size: 9px; color: #FB923C;"></i></div>
+          <span class="person-tile" onclick="selectPerson(this, 'فطومة')">فطومة</span>
+          <span class="person-tile" onclick="selectPerson(this, 'سارة')">سارة</span>
+        </div>
 
-  final List<QuestionModel> _initialQuestions = [
-    QuestionModel(
-      questionText: '(طفو الضو - سكرو الباب - ليش الصرف بلا طعمة) من صاحب هذه المقولة؟',
-      emoji: '💡',
-      correctAnswer: 'الأب حسن',
-    ),
-    QuestionModel(
-      questionText: '(حاج تلفخو بقلبي) من صاحب هذه المقولة؟',
-      emoji: '❤️‍🔥',
-      correctAnswer: 'الأم عليا',
-    ),
-    QuestionModel(
-      questionText: 'مؤسس شرب القهوة',
-      emoji: '☕',
-      correctAnswer: 'أم زيد',
-    ),
-    QuestionModel(
-      questionText: 'أطول بال',
-      emoji: '🧘',
-      correctAnswer: 'أبو زيد',
-    ),
-    QuestionModel(
-      questionText: 'فرنسا فرع بيت دياب',
-      emoji: '🥐',
-      correctAnswer: 'خولة',
-    ),
-    QuestionModel(
-      questionText: 'فنون نفش فايت بالحيط',
-      emoji: '🌀',
-      correctAnswer: 'زيد',
-    ),
-    QuestionModel(
-      questionText: 'كفو يدخلك غيبوبة (ملك السلبية)',
-      emoji: '🫠',
-      correctAnswer: 'طلال أبو أحمد',
-    ),
-    QuestionModel(
-      questionText: 'القلب الطيب صاحب مقولة (عالخير)',
-      emoji: '✨',
-      correctAnswer: 'غفير أم أحمد',
-    ),
-    QuestionModel(
-      questionText: 'لمن تقال هذه الجملة (لا تعرف تدرس - خليك قاعد)؟',
-      emoji: '📖',
-      correctAnswer: 'أحمد الطلال',
-    ),
-    QuestionModel(
-      questionText: 'مؤسس نظرية الهروب من العقاب',
-      emoji: '🏃‍♂️',
-      correctAnswer: 'محمد الطلال',
-    ),
-    QuestionModel(
-      questionText: 'ملك الكذب بلا منازع',
-      emoji: '🤥',
-      correctAnswer: 'معاذ',
-    ),
-    QuestionModel(
-      questionText: 'لا تلقني ع ببكي لحالي',
-      emoji: '😭',
-      correctAnswer: 'سندس',
-    ),
-    QuestionModel(
-      questionText: 'الصمت القاتل',
-      emoji: '🤫',
-      correctAnswer: 'أبو الحسن',
-    ),
-    QuestionModel(
-      questionText: 'القنوات العالمية والمحلية',
-      emoji: '📡',
-      correctAnswer: 'أم الحسن',
-    ),
-    QuestionModel(
-      questionText: 'ملك البكاء',
-      emoji: '🥺',
-      correctAnswer: 'الحسن',
-    ),
-    QuestionModel(
-      questionText: 'ملوك النفسيات والمبادئ',
-      emoji: '👑',
-      correctAnswer: 'يمونة',
-    ),
-    QuestionModel(
-      questionText: 'أبو مشاكل ومصاري',
-      emoji: '💰',
-      correctAnswer: 'محمد أبو عبادة',
-    ),
-    QuestionModel(
-      questionText: 'ملوك التصوير',
-      emoji: '📸',
-      correctAnswer: 'بتول أم عبادة',
-    ),
-    QuestionModel(
-      questionText: 'اعقل شخص بالعيلة',
-      emoji: '🧠',
-      correctAnswer: 'شذى',
-    ),
-    QuestionModel(
-      questionText: 'الصمت القاتل برو ماكس',
-      emoji: '🔕',
-      correctAnswer: 'سلمان',
-    ),
-    QuestionModel(
-      questionText: 'خلق الزعل من اجلك',
-      emoji: '😤',
-      correctAnswer: 'فطومة',
-    ),
-    QuestionModel(
-      questionText: 'خلق البوز من اجلك',
-      emoji: '😒',
-      correctAnswer: 'سارة',
-    ),
-    QuestionModel(
-      questionText: 'خلق الحظ من أجلك',
-      emoji: '🍀',
-      correctAnswer: 'شهد',
-    ),
-    QuestionModel(
-      questionText: 'المشاريع الفاشلة',
-      emoji: '📉',
-      correctAnswer: 'مصطفى يحيى',
-    ),
+        <div class="branch-card" style="border: 1px solid rgba(192, 132, 252, 0.3);">
+          <div class="branch-title" style="color: #C084FC;">عائلة أبو الحسن</div>
+          <span class="person-tile" onclick="selectPerson(this, 'أبو الحسن')">أبو الحسن</span>
+          <span class="person-tile" onclick="selectPerson(this, 'أم الحسن')">أم الحسن</span>
+          <div><i class="fa-solid fa-angle-down" style="font-size: 9px; color: #C084FC;"></i></div>
+          <span class="person-tile" onclick="selectPerson(this, 'الحسن')">الحسن</span>
+          <span class="person-tile" onclick="selectPerson(this, 'يمونة')">يمونة</span>
+        </div>
+
+        <div class="branch-card" style="border: 1px solid rgba(34, 211, 238, 0.3);">
+          <div class="branch-title" style="color: #22D3EE;">عائلة محمد وبتول</div>
+          <span class="person-tile" onclick="selectPerson(this, 'محمد أبو عبادة')">محمد أبو عبادة</span>
+          <span class="person-tile" onclick="selectPerson(this, 'بتول أم عبادة')">بتول أم عبادة</span>
+        </div>
+
+        <div class="branch-card" style="border: 1px solid rgba(244, 63, 94, 0.3);">
+          <div class="branch-title" style="color: #F43F5E;">عائلة شهد ومصطفى</div>
+          <span class="person-tile" onclick="selectPerson(this, 'شهد')">شهد</span>
+          <span class="person-tile" onclick="selectPerson(this, 'مصطفى يحيى')">مصطفى يحيى</span>
+        </div>
+      </div>
+    </div>
+
+    <button id="actionBtn" class="btn" style="background: #475569; color: #94A3B8;" onclick="handleAction()">اختر شخصاً من الشجرة أعلاه</button>
+  </div>
+
+  <!-- 3. شاشة النتيجة -->
+  <div id="resultScreen" class="hidden result-screen">
+    <div id="resultIcon" style="font-size: 50px;">🎉 🎆 🏆 🎆 🎉</div>
+    <p style="color: #94A3B8; margin-top: 5px;" id="resultPlayerName">نتيجة المتسابق: </p>
+    
+    <div class="score-circle" id="scoreCircle">
+      <span class="score-percentage" id="scorePercentage">0%</span>
+      <span class="score-sub" id="scoreSub">0 من 24</span>
+    </div>
+
+    <div class="feedback-card">
+      <h3 id="feedbackTitle" style="color: #FBBF24; margin-bottom: 5px;">ممتاز!</h3>
+      <p id="feedbackSub" style="font-size: 13px; color: #CBD5E1;">أداء رائع في معرفة أفراد العائلة.</p>
+    </div>
+
+    <button class="btn" onclick="resetQuiz()">إعادة التحدي بالعشواء 🔄</button>
+  </div>
+</div>
+
+<script>
+  const questionsData = [
+    { q: "(طفو الضو - سكرو الباب - ليش الصرف بلا طعمة) من صاحب هذه المقولة؟", e: "💡", a: "الأب حسن" },
+    { q: "(حاج تلفخو بقلبي) من صاحب هذه المقولة؟", e: "❤️‍ف", a: "الأم عليا" },
+    { q: "مؤسس شرب القهوة", e: "☕", a: "أم زيد" },
+    { q: "أطول بال", e: "🧘", a: "أبو زيد" },
+    { q: "فرنسا فرع بيت دياب", e: "🥐", a: "خولة" },
+    { q: "فنون نفش فايت بالحيط", e: "🌀", a: "زيد" },
+    { q: "كفو يدخلك غيبوبة (ملك السلبية)", e: "🫠", a: "طلال أبو أحمد" },
+    { q: "القلب الطيب صاحب مقولة (عالخير)", e: "✨", a: "غفير أم أحمد" },
+    { q: "لمن تقال هذه الجملة (لا تعرف تدرس - خليك قاعد)؟", e: "📖", a: "أحمد الطلال" },
+    { q: "مؤسس نظرية الهروب من العقاب", e: "🏃‍♂️", a: "محمد الطلال" },
+    { q: "ملك الكذب بلا منازع", e: "🤥", a: "معاذ" },
+    { q: "لا تلقني ع ببكي لحالي", e: "😭", a: "سندس" },
+    { q: "الصمت القاتل", e: "🤫", a: "أبو الحسن" },
+    { q: "القنوات العالمية والمحلية", e: "📡", a: "أم الحسن" },
+    { q: "ملك البكاء", e: "🥺", a: "الحسن" },
+    { q: "ملوك النفسيات والمبادئ", e: "👑", a: "يمونة" },
+    { q: "أبو مشاكل ومصاري", e: "💰", a: "محمد أبو عبادة" },
+    { q: "ملوك التصوير", e: "📸", a: "بتول أم عبادة" },
+    { q: "اعقل شخص بالعيلة", e: "🧠", a: "شذى" },
+    { q: "الصمت القاتل برو ماكس", e: "🔕", a: "سلمان" },
+    { q: "خلق الزعل من اجلك", e: "😤", a: "فطومة" },
+    { q: "خلق البوز من اجلك", e: "😒", a: "سارة" },
+    { q: "خلق الحظ من أجلك", e: "🍀", a: "شهد" },
+    { q: "المشاريع الفاشلة", e: "📉", a: "مصطفى يحيى" }
   ];
 
-  void _startQuiz() {
-    if (_nameController.text.trim().isNotEmpty) {
-      setState(() {
-        _questions = List.from(_initialQuestions)..shuffle();
-        _screenIndex = 1;
-        _currentQuestionIndex = 0;
-        _score = 0;
-        _selectedPerson = '';
-        _hasSubmitted = false;
-      });
-    }
+  let questions = [];
+  let currentQIndex = 0;
+  let score = 0;
+  let selectedPerson = "";
+  let hasSubmitted = false;
+  let playerName = "";
+
+  function startQuiz() {
+    const input = document.getElementById('playerName').value.trim();
+    if (!input) return alert('الرجاء إدخال الاسم أولاً!');
+    playerName = input;
+    
+    // خلط الأسئلة عشوائياً
+    questions = [...questionsData].sort(() => Math.random() - 0.5);
+    currentQIndex = 0;
+    score = 0;
+    
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('quizScreen').classList.remove('hidden');
+    document.getElementById('displayPlayerName').innerText = `👤 المتسابق: ${playerName}`;
+    
+    loadQuestion();
   }
 
-  void _submitAnswer() {
-    if (_selectedPerson.isEmpty || _hasSubmitted) return;
+  function loadQuestion() {
+    hasSubmitted = false;
+    selectedPerson = "";
+    
+    const q = questions[currentQIndex];
+    document.getElementById('displayQCount').innerText = `السؤال ${currentQIndex + 1} / ${questions.length}`;
+    document.getElementById('progressFill').style.width = `${((currentQIndex + 1) / questions.length) * 100}%`;
+    document.getElementById('qEmoji').innerText = q.e;
+    document.getElementById('qText').innerText = q.q;
 
-    final currentQ = _questions[_currentQuestionIndex];
-    final isCorrect = _selectedPerson == currentQ.correctAnswer;
+    // إعادة تنظيف البطاقات
+    document.querySelectorAll('.person-tile').forEach(tile => {
+      tile.className = tile.className.replace(/selected|correct-light|wrong-light/g, '').trim();
+    });
 
-    setState(() {
-      _hasSubmitted = true;
-      _isCorrectAnswer = isCorrect;
+    const btn = document.getElementById('actionBtn');
+    btn.style.background = '#475569';
+    btn.style.color = '#94A3B8';
+    btn.innerText = 'اختر شخصاً من الشجرة أعلاه';
+  }
+
+  function selectPerson(el, name) {
+    if (hasSubmitted) return;
+    
+    document.querySelectorAll('.person-tile').forEach(t => t.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedPerson = name;
+
+    const btn = document.getElementById('actionBtn');
+    btn.style.background = '#FBBF24';
+    btn.style.color = '#000';
+    btn.innerText = `تأكيد الإجابة: (${name}) ➔`;
+  }
+
+  function handleAction() {
+    if (!selectedPerson) return;
+
+    if (!hasSubmitted) {
+      // مرحلة التأكيد
+      hasSubmitted = true;
+      const correctAns = questions[currentQIndex].a;
+      const isCorrect = selectedPerson === correctAns;
+
+      document.querySelectorAll('.person-tile').forEach(tile => {
+        const tileName = tile.innerText.trim();
+        if (tileName === selectedPerson && !isCorrect) {
+          tile.classList.add('wrong-light'); // إضاءة حمراء
+        }
+        if (tileName === correctAns) {
+          tile.classList.add('correct-light'); // إضاءة خضراء
+        }
+      });
+
+      const btn = document.getElementById('actionBtn');
       if (isCorrect) {
-        _score++;
-        Future.delayed(const Duration(milliseconds: 1200), () {
-          if (mounted) _nextQuestion();
-        });
+        score++;
+        btn.style.background = '#16A34A';
+        btn.style.color = '#FFF';
+        btn.innerText = 'إجابة صحيحة! جاري الانتقال... 🎉';
+        setTimeout(nextQuestion, 1200);
+      } else {
+        btn.style.background = '#DC2626';
+        btn.style.color = '#FFF';
+        btn.innerText = 'إجابة خاطئة! اضغط للانتقال للسؤال التالي ➔';
       }
-    });
-  }
-
-  void _nextQuestion() {
-    if (_currentQuestionIndex + 1 < _questions.length) {
-      setState(() {
-        _currentQuestionIndex++;
-        _selectedPerson = '';
-        _hasSubmitted = false;
-      });
     } else {
-      setState(() {
-        _screenIndex = 2;
-      });
+      nextQuestion();
     }
   }
 
-  void _resetQuiz() {
-    setState(() {
-      _screenIndex = 0;
-      _currentQuestionIndex = 0;
-      _score = 0;
-      _selectedPerson = '';
-      _hasSubmitted = false;
-      _nameController.clear();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 800),
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-            child: _buildCurrentScreen(),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCurrentScreen() {
-    if (_screenIndex == 0) return _buildStartScreen();
-    if (_screenIndex == 1) return _buildQuizScreen();
-    return _buildResultScreen();
-  }
-
-  // --- 1. شاشة البداية ---
-  Widget _buildStartScreen() {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF6366F1).withOpacity(0.2),
-              border: Border.all(color: const Color(0xFF818CF8), width: 2),
-            ),
-            child: const Text('👑', style: TextStyle(fontSize: 60)),
-          ),
-          const SizedBox(height: 15),
-          const Text(
-            'تحدي شجرة عائلة حسن دياب',
-            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFFFBBF24)),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'اختر الشخص المناسب من الشجرة مباشرة لكل مقولة أو وصف!',
-            style: TextStyle(fontSize: 14, color: Colors.white70),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 25),
-          SizedBox(
-            width: 320,
-            child: TextField(
-              controller: _nameController,
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                hintText: 'أدخل اسمك الكريم...',
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.08),
-                contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFFBBF24))),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: 320,
-            height: 48,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFBBF24),
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                elevation: 4,
-              ),
-              onPressed: _startQuiz,
-              child: const Text('ابدأ التحدي العشوائي 🚀', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- 2. شاشة الأسئلة ---
-  Widget _buildQuizScreen() {
-    final q = _questions[_currentQuestionIndex];
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('👤 المتسابق: ${_nameController.text}', style: const TextStyle(color: Color(0xFFFBBF24), fontWeight: FontWeight.bold, fontSize: 13)),
-            Text('السؤال ${_currentQuestionIndex + 1} / ${_questions.length}', style: const TextStyle(color: Color(0xFF34D399), fontWeight: FontWeight.bold, fontSize: 13)),
-          ],
-        ),
-        const SizedBox(height: 6),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: LinearProgressIndicator(
-            value: (_currentQuestionIndex + 1) / _questions.length,
-            minHeight: 6,
-            backgroundColor: Colors.white10,
-            color: const Color(0xFFFBBF24),
-          ),
-        ),
-        const SizedBox(height: 10),
-
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.06),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.15)),
-          ),
-          child: Row(
-            children: [
-              Text(q.emoji, style: const TextStyle(fontSize: 32)),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  q.questionText,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, height: 1.3),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 10),
-
-        Expanded(
-          child: _buildInteractiveFamilyTree(q.correctAnswer),
-        ),
-
-        const SizedBox(height: 8),
-        
-        SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: IndexedStack(
-            index: !_hasSubmitted ? 0 : 1,
-            children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _selectedPerson.isNotEmpty ? const Color(0xFFFBBF24) : Colors.grey.shade800,
-                  foregroundColor: _selectedPerson.isNotEmpty ? Colors.black : Colors.white38,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                onPressed: _selectedPerson.isNotEmpty ? _submitAnswer : null,
-                child: Text(
-                  _selectedPerson.isEmpty ? 'اختر شخصاً من الشجرة أعلاه' : 'تأكيد الإجابة: ($_selectedPerson) ➔',
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                ),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _isCorrectAnswer ? Colors.green.shade600 : Colors.red.shade600,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                onPressed: _isCorrectAnswer ? null : _nextQuestion,
-                child: Text(
-                  _isCorrectAnswer
-                      ? 'إجابة صحيحة! جاري الانتقال... 🎉'
-                      : 'إجابة خاطئة! اضغط للانتقال للسؤال التالي ➔',
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // --- رسم شجرة العائلة التفاعلية ---
-  Widget _buildInteractiveFamilyTree(String correctAnswer) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildPersonTile('الأب حسن', correctAnswer, isRoot: true),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text('❤️', style: TextStyle(fontSize: 14)),
-              ),
-              _buildPersonTile('الأم عليا', correctAnswer, isRoot: true),
-            ],
-          ),
-
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 4),
-            height: 10,
-            width: double.infinity,
-            child: CustomPaint(painter: TreeLinePainter()),
-          ),
-
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 3,
-              mainAxisSpacing: 6,
-              crossAxisSpacing: 6,
-              childAspectRatio: 0.8,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                _buildFamilyBranch('عائلة أبو زيد', ['أم زيد', 'أبو زيد'], ['زيد', 'خولة'], const Color(0xFF38BDF8), correctAnswer),
-                _buildFamilyBranch('عائلة طلال', ['غفير أم أحمد', 'طلال أبو أحمد'], ['أحمد الطلال', 'محمد الطلال', 'معاذ', 'سندس'], const Color(0xFF4ADE80), correctAnswer),
-                _buildFamilyBranch('عائلة شذى وسلمان', ['شذى', 'سلمان'], ['فطومة', 'سارة'], const Color(0xFFFB923C), correctAnswer),
-                _buildFamilyBranch('عائلة أبو الحسن', ['أبو الحسن', 'أم الحسن'], ['الحسن', 'يمونة'], const Color(0xFFC084FC), correctAnswer),
-                _buildFamilyBranch('عائلة محمد وبتول', ['محمد أبو عبادة', 'بتول أم عبادة'], [], const Color(0xFF22D3EE), correctAnswer),
-                _buildFamilyBranch('عائلة شهد ومصطفى', ['شهد', 'مصطفى يحيى'], [], const Color(0xFFF43F5E), correctAnswer),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFamilyBranch(String title, List<String> parents, List<String> kids, Color accentColor, String correctAnswer) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: accentColor.withOpacity(0.3), width: 1),
-      ),
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: TextStyle(color: accentColor, fontSize: 9.5, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 3),
-
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 2,
-            runSpacing: 2,
-            children: parents.map((p) => _buildPersonTile(p, correctAnswer, accent: accentColor)).toList(),
-          ),
-
-          if (kids.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 1.0),
-              child: Icon(Icons.keyboard_arrow_down_rounded, size: 12, color: accentColor.withOpacity(0.6)),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const NeverScrollableScrollPhysics(),
-                child: Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 2,
-                  runSpacing: 2,
-                  children: kids.map((k) => _buildPersonTile(k, correctAnswer, isKid: true, accent: accentColor)).toList(),
-                ),
-              ),
-            ),
-          ]
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPersonTile(String name, String correctAnswer, {bool isRoot = false, bool isKid = false, Color accent = const Color(0xFFFBBF24)}) {
-    final isSelected = _selectedPerson == name;
-    final isCorrect = name == correctAnswer;
-
-    Color tileColor = isSelected ? accent : (isKid ? Colors.white.withOpacity(0.05) : Colors.white.withOpacity(0.1));
-    Color textColor = isSelected ? Colors.black : Colors.white;
-    Border border = Border.all(color: isSelected ? Colors.white : Colors.white12, width: isSelected ? 2 : 1);
-
-    if (_hasSubmitted) {
-      if (isSelected && !isCorrect) {
-        tileColor = Colors.red.shade600;
-        textColor = Colors.white;
-        border = Border.all(color: Colors.redAccent, width: 2);
-      } else if (isCorrect) {
-        tileColor = Colors.green.shade600;
-        textColor = Colors.white;
-        border = Border.all(color: Colors.greenAccent, width: 2);
-      }
-    }
-
-    return InkWell(
-      onTap: _hasSubmitted ? null : () {
-        setState(() {
-          _selectedPerson = name;
-        });
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: isRoot ? 10 : 5,
-          vertical: isRoot ? 6 : 3,
-        ),
-        decoration: BoxDecoration(
-          color: tileColor,
-          borderRadius: BorderRadius.circular(8),
-          border: border,
-        ),
-        child: Text(
-          name,
-          style: TextStyle(
-            fontSize: isRoot ? 12 : (isKid ? 9 : 10),
-            fontWeight: isSelected || isRoot || (_hasSubmitted && isCorrect) ? FontWeight.bold : FontWeight.normal,
-            color: textColor,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // --- 3. شاشة النتيجة ---
-  Widget _buildResultScreen() {
-    final double percentage = (_score / _questions.length) * 100;
-    final bool isFireworks = percentage >= 80;
-
-    Color resultColor;
-    String feedbackTitle;
-    String feedbackSub;
-
-    if (percentage >= 90) {
-      resultColor = const Color(0xFFFBBF24);
-      feedbackTitle = 'أسطوري! علامة تامة تقريباً! 🎆🎉';
-      feedbackSub = 'أنت تحفظ كل تفاصيل العائلة وأسرارها عن ظهر قلب!';
-    } else if (percentage >= 80) {
-      resultColor = const Color(0xFF34D399);
-      feedbackTitle = 'نتيجة ممتازة جداً! 🥳✨';
-      feedbackSub = 'معرفتك بأفراد العائلة ومواقفهم ممتازة وفوق العادة!';
-    } else if (percentage >= 50) {
-      resultColor = const Color(0xFFFB923C);
-      feedbackTitle = 'نتيجة متوسطة! ☕';
-      feedbackSub = 'يلزمك القليل من السهرات والجلسات العائلية للتركيز بالتفاصيل!';
+  function nextQuestion() {
+    if (currentQIndex + 1 < questions.length) {
+      currentQIndex++;
+      loadQuestion();
     } else {
-      resultColor = const Color(0xFFF43F5E);
-      feedbackTitle = 'تحتاج إعادة تعرف على العيلة! 😅';
-      feedbackSub = 'شكلك نسيان بعض الشخصيات، جرب التحدي مرة ثانية!';
+      showResults();
     }
-
-    return Stack(
-      children: [
-        if (isFireworks)
-          Positioned.fill(
-            child: IgnorePointer(
-              child: Center(
-                child: Text('🎆 ✨ 🎈 🎆 🎉', style: TextStyle(fontSize: 40, color: Colors.white.withOpacity(0.3))),
-              ),
-            ),
-          ),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(isFireworks ? '🎉 🎆 🏆 🎆 🎉' : '🎯', style: const TextStyle(fontSize: 50)),
-            const SizedBox(height: 10),
-            Text(
-              'نتيجة المتسابق: ${_nameController.text}',
-              style: const TextStyle(fontSize: 16, color: Colors.white70),
-            ),
-            const SizedBox(height: 20),
-
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 140,
-                  height: 140,
-                  child: CircularProgressIndicator(
-                    value: percentage / 100,
-                    strokeWidth: 12,
-                    backgroundColor: Colors.white10,
-                    color: resultColor,
-                  ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${percentage.toStringAsFixed(0)}%',
-                      style: TextStyle(fontSize: 38, fontWeight: FontWeight.bold, color: resultColor),
-                    ),
-                    Text(
-                      '$_score من ${_questions.length}',
-                      style: const TextStyle(fontSize: 12, color: Colors.white60),
-                    ),
-                  ],
-                )
-              ],
-            ),
-
-            const SizedBox(height: 25),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: resultColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: resultColor.withOpacity(0.4)),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    feedbackTitle,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: resultColor),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    feedbackSub,
-                    style: const TextStyle(fontSize: 14, color: Colors.white70),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            SizedBox(
-              width: 250,
-              height: 48,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: resultColor,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                onPressed: _resetQuiz,
-                child: const Text('إعادة التحدي بالعشواء 🔄', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class TreeLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white24
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke;
-
-    final path = Path();
-    path.moveTo(size.width / 2, 0);
-    path.lineTo(size.width / 2, size.height / 2);
-
-    path.moveTo(size.width * 0.16, size.height / 2);
-    path.lineTo(size.width * 0.84, size.height / 2);
-
-    canvas.drawPath(path, paint);
   }
 
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
+  function showResults() {
+    document.getElementById('quizScreen').classList.add('hidden');
+    document.getElementById('resultScreen').classList.remove('hidden');
+
+    const pct = Math.round((score / questions.length) * 100);
+    document.getElementById('resultPlayerName').innerText = `نتيجة المتسابق: ${playerName}`;
+    document.getElementById('scorePercentage').innerText = `${pct}%`;
+    document.getElementById('scoreSub').innerText = `${score} من ${questions.length}`;
+
+    const titleEl = document.getElementById('feedbackTitle');
+    const subEl = document.getElementById('feedbackSub');
+    const circle = document.getElementById('scoreCircle');
+
+    if (pct >= 80) {
+      circle.style.borderColor = '#34D399';
+      titleEl.innerText = 'أسطوري! نتيجة ممتازة جداً 🎆🎉';
+      subEl.innerText = 'أنت تحفظ كل تفاصيل العائلة وأسرارها عن ظهر قلب!';
+    } else if (pct >= 50) {
+      circle.style.borderColor = '#FB923C';
+      titleEl.innerText = 'نتيجة متوسطة! ☕';
+      subEl.innerText = 'يلزمك القليل من السهرات والجلسات العائلية للتركيز بالتفاصيل!';
+    } else {
+      circle.style.borderColor = '#F43F5E';
+      titleEl.innerText = 'تحتاج إعادة تعرف على العيلة! 😅';
+      subEl.innerText = 'شكلك نسيان بعض الشخصيات، جرب التحدي مرة ثانية!';
+    }
+  }
+
+  function resetQuiz() {
+    document.getElementById('resultScreen').classList.add('hidden');
+    document.getElementById('startScreen').classList.remove('hidden');
+    document.getElementById('playerName').value = '';
+  }
+</script>
+</body>
+</html>
